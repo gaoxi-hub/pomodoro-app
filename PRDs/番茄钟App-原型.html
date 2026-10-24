@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>番茄钟 App 页面原型</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background:#f5f5f5; margin:0; padding:20px; color:#333; }
+  h1 { font-size:22px; }
+  .nav { margin:16px 0; }
+  .nav button { padding:8px 14px; margin-right:8px; border:1px solid #ccc; background:#fff; border-radius:6px; cursor:pointer; }
+  .nav button.active { background:#e74c3c; color:#fff; border-color:#e74c3c; }
+  .page { display:none; background:#fff; border:1px solid #ddd; border-radius:10px; padding:20px; max-width:420px; margin:0 auto; }
+  .page.active { display:block; }
+  .page h2 { font-size:18px; border-bottom:1px solid #eee; padding-bottom:8px; }
+  .timer-circle { width:200px; height:200px; border:8px solid #e74c3c; border-radius:50%; margin:20px auto; display:flex; align-items:center; justify-content:center; font-size:40px; font-weight:bold; }
+  .mode-tag { text-align:center; font-size:14px; color:#e74c3c; font-weight:bold; }
+  .btn-row { text-align:center; margin:16px 0; }
+  .btn-row button { padding:10px 18px; margin:4px; border:none; border-radius:6px; font-size:14px; cursor:pointer; }
+  .btn-start { background:#2ecc71; color:#fff; }
+  .btn-pause { background:#f39c12; color:#fff; }
+  .btn-reset { background:#95a5a6; color:#fff; }
+  .stat-box { display:flex; justify-content:space-around; margin-top:12px; text-align:center; }
+  .stat-box div { background:#fafafa; border:1px solid #eee; border-radius:8px; padding:10px; flex:1; margin:4px; }
+  .stat-box b { display:block; font-size:20px; color:#e74c3c; }
+  select, input[type=text], input[type=number] { width:100%; padding:8px; margin:6px 0; box-sizing:border-box; border:1px solid #ccc; border-radius:6px; }
+  .task-item { border:1px solid #eee; border-radius:8px; padding:10px; margin:8px 0; }
+  .task-item .bar { height:8px; background:#eee; border-radius:4px; margin-top:6px; }
+  .task-item .bar span { display:block; height:8px; background:#e74c3c; border-radius:4px; }
+  table { width:100%; border-collapse:collapse; margin-top:10px; }
+  th, td { border:1px solid #eee; padding:8px; text-align:center; font-size:14px; }
+  .setting-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f0f0f0; }
+  .chart { display:flex; align-items:flex-end; height:120px; gap:8px; margin-top:12px; }
+  .chart .bar { flex:1; background:#e74c3c; border-radius:4px 4px 0 0; }
+</style>
+</head>
+<body>
+<h1>🍅 番茄钟 App — 页面原型</h1>
+<div class="nav">
+  <button class="active" onclick="show('p1',this)">① 计时主页</button>
+  <button onclick="show('p2',this)">② 任务页</button>
+  <button onclick="show('p3',this)">③ 统计页</button>
+  <button onclick="show('p4',this)">④ 设置页</button>
+</div>
+
+<!-- 页面1：计时主页 -->
+<div id="p1" class="page active">
+  <h2>计时主页</h2>
+  <div class="mode-tag">● 工作模式</div>
+  <div class="timer-circle">25:00</div>
+  <div class="btn-row">
+    <button class="btn-start">开始</button>
+    <button class="btn-pause">暂停</button>
+    <button class="btn-reset">重置</button>
+  </div>
+  <label>当前任务：</label>
+  <select>
+    <option>写周报</option>
+    <option>复习算法</option>
+    <option>临时任务…</option>
+  </select>
+  <div class="stat-box">
+    <div>今日番茄<b>6</b></div>
+    <div>专注时长<b>150m</b></div>
+    <div>连续天数<b>3</b></div>
+  </div>
+</div>
+
+<!-- 页面2：任务页 -->
+<div id="p2" class="page">
+  <h2>任务页</h2>
+  <input type="text" placeholder="输入新任务名称…">
+  <div class="btn-row"><button class="btn-start">+ 添加任务</button></div>
+  <div class="task-item">
+    <div>写周报 <span style="float:right;color:#999">3/5 🍅</span></div>
+    <div class="bar"><span style="width:60%"></span></div>
+  </div>
+  <div class="task-item">
+    <div>复习算法 <span style="float:right;color:#999">1/4 🍅</span></div>
+    <div class="bar"><span style="width:25%"></span></div>
+  </div>
+  <div class="task-item">
+    <div>整理资料 <span style="float:right;color:#999">0/2 🍅</span></div>
+    <div class="bar"><span style="width:0%"></span></div>
+  </div>
+</div>
+
+<!-- 页面3：统计页 -->
+<div id="p3" class="page">
+  <h2>统计页</h2>
+  <div class="setting-row">
+    <span>时间范围</span>
+    <select style="width:auto">
+      <option>日</option><option>周</option><option>月</option>
+    </select>
+  </div>
+  <div class="chart">
+    <div class="bar" style="height:40%"></div>
+    <div class="bar" style="height:70%"></div>
+    <div class="bar" style="height:55%"></div>
+    <div class="bar" style="height:90%"></div>
+    <div class="bar" style="height:30%"></div>
+    <div class="bar" style="height:65%"></div>
+    <div class="bar" style="height:80%"></div>
+  </div>
+  <table>
+    <tr><th>日期</th><th>番茄数</th><th>专注时长</th></tr>
+    <tr><td>10-17</td><td>8</td><td>200m</td></tr>
+    <tr><td>10-18</td><td>6</td><td>150m</td></tr>
+    <tr><td>10-19</td><td>10</td><td>250m</td></tr>
+  </table>
+  <div class="btn-row"><button class="btn-reset">导出数据</button></div>
+</div>
+
+<!-- 页面4：设置页 -->
+<div id="p4" class="page">
+  <h2>设置页</h2>
+  <div class="setting-row"><span>工作时长（分钟）</span><input type="number" value="25" style="width:80px"></div>
+  <div class="setting-row"><span>短休息（分钟）</span><input type="number" value="5" style="width:80px"></div>
+  <div class="setting-row"><span>长休息（分钟）</span><input type="number" value="15" style="width:80px"></div>
+  <div class="setting-row"><span>每几个番茄后长休息</span><input type="number" value="4" style="width:80px"></div>
+  <div class="setting-row"><span>自动开始下一轮</span><input type="checkbox" checked></div>
+  <div class="setting-row"><span>休息结束声音提醒</span><input type="checkbox" checked></div>
+  <div class="setting-row"><span>护眼提醒（20-20-20）</span><input type="checkbox"></div>
+  <div class="btn-row"><button class="btn-start">保存设置</button></div>
+</div>
+
+<script>
+  function show(id, btn){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+</script>
+</body>
+</html>

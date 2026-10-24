@@ -1,0 +1,12 @@
+# OS
+.DS_Store
+
+# 本地 Agent 数据
+.workbuddy/
+
+# 构建产物（CI 里会重新构建）
+h5/dist
+h5/dist-ssr
+h5/node_modules
+**/.vite
+*.local

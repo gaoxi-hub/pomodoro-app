@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>番茄钟 App · 高保真原型（Opal 风格）</title>
+<style>
+  :root{
+    --bg-primary:#000000;
+    --bg-deep:#0D1410;
+    --card-bg:rgba(255,255,255,0.06);
+    --accent:#7FFFD4;
+    --accent-secondary:#5EE0A0;
+    --accent-gradient:linear-gradient(135deg,#7FFFD4,#FFFFFF);
+    --warn:#FF6B81;
+    --energy:#FF9F45;
+    --text-primary:#FFFFFF;
+    --text-secondary:rgba(255,255,255,0.55);
+    --text-tertiary:rgba(255,255,255,0.30);
+    --radius-card:20px;
+    --radius-pill:999px;
+    --radius-small:12px;
+    --glow-accent:0 0 40px rgba(127,255,212,0.35);
+    --glow-soft:0 0 16px rgba(127,255,212,0.20);
+    --glass-blur:blur(20px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}
+  body{
+    font-family:-apple-system,"SF Pro Display","PingFang SC",sans-serif;
+    background:radial-gradient(circle at 50% 0%,#0a1410 0%,#000 60%);
+    color:var(--text-primary);
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:30px;
+  }
+  /* 手机外壳 */
+  .phone{
+    width:390px;height:844px;background:#000;border-radius:46px;
+    border:1px solid rgba(255,255,255,0.10);
+    box-shadow:0 0 0 12px #0a0a0a,0 30px 80px rgba(0,0,0,0.8),0 0 60px rgba(127,255,212,0.08);
+    position:relative;overflow:hidden;display:flex;flex-direction:column;
+  }
+  .island{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:120px;height:34px;background:#000;border-radius:20px;z-index:50;}
+  .statusbar{display:flex;justify-content:space-between;align-items:center;padding:18px 26px 0;font-size:14px;font-weight:600;z-index:10;}
+  .statusbar .icons{display:flex;gap:6px;align-items:center;}
+  .screen{flex:1;overflow-y:auto;padding:8px 20px 110px;scrollbar-width:none;}
+  .screen::-webkit-scrollbar{display:none;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin:6px 0 18px;}
+  .topbar h1{font-size:30px;font-weight:700;letter-spacing:-0.5px;}
+  .icon-btn{width:44px;height:44px;border-radius:50%;background:var(--card-bg);backdrop-filter:var(--glass-blur);border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;}
+
+  /* ===== 计时主页 ===== */
+  .mode-row{display:flex;gap:8px;justify-content:center;margin-bottom:24px;}
+  .mode-pill{padding:8px 16px;border-radius:var(--radius-pill);font-size:13px;font-weight:600;background:var(--card-bg);border:1px solid rgba(255,255,255,0.12);color:var(--text-secondary);}
+  .mode-pill.active{background:rgba(127,255,212,0.12);border-color:var(--accent);color:var(--accent);box-shadow:var(--glow-soft);}
+  .hero{position:relative;width:280px;height:280px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;}
+  .hero svg{position:absolute;inset:0;transform:rotate(-90deg);}
+  .ring-bg{fill:none;stroke:rgba(255,255,255,0.08);stroke-width:10;}
+  .ring-fg{fill:none;stroke:url(#grad);stroke-width:10;stroke-linecap:round;filter:drop-shadow(0 0 8px rgba(127,255,212,0.6));transition:stroke-dashoffset 1s linear;}
+  .hero .time{font-size:72px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-2px;text-shadow:var(--glow-accent);}
+  .hero .mode-label{position:absolute;top:64px;font-size:13px;letter-spacing:2px;color:var(--accent);font-weight:600;}
+  .hero .sub{position:absolute;bottom:70px;font-size:13px;color:var(--text-secondary);}
+  .controls{display:flex;gap:12px;justify-content:center;margin:18px 0 26px;}
+  .btn{padding:14px 26px;border-radius:var(--radius-pill);font-size:15px;font-weight:600;border:none;cursor:pointer;}
+  .btn-primary{background:var(--accent-gradient);color:#04201a;box-shadow:var(--glow-accent);}
+  .btn-ghost{background:transparent;color:var(--text-primary);border:1px solid rgba(255,255,255,0.25);}
+  /* 当前任务卡（可点击选择） */
+  .task-now{background:var(--card-bg);backdrop-filter:var(--glass-blur);border:1px solid rgba(255,255,255,0.10);border-radius:var(--radius-card);padding:16px 18px;margin-bottom:22px;cursor:pointer;transition:.2s;}
+  .task-now:active{transform:scale(0.98);}
+  .task-now .lbl{font-size:11px;letter-spacing:1.5px;color:var(--text-tertiary);text-transform:uppercase;margin-bottom:6px;display:flex;justify-content:space-between;}
+  .task-now .lbl .change{color:var(--accent);}
+  .task-now .name{font-size:18px;font-weight:600;margin-bottom:10px;}
+  .task-now .prog{display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-bottom:6px;}
+  .bar{height:8px;border-radius:4px;background:rgba(255,255,255,0.08);overflow:hidden;}
+  .bar > i{display:block;height:100%;background:var(--accent-gradient);box-shadow:var(--glow-soft);}
+  .pills{display:flex;gap:10px;}
+  .pill{flex:1;background:var(--card-bg);backdrop-filter:var(--glass-blur);border:1px solid rgba(255,255,255,0.12);border-radius:18px;padding:14px 6px;text-align:center;position:relative;}
+  .pill .ico{font-size:18px;margin-bottom:4px;}
+  .pill .num{font-size:22px;font-weight:700;color:var(--accent);}
+  .pill.energy .num{color:var(--energy);}
+  .pill .cap{font-size:10px;letter-spacing:1px;color:var(--text-tertiary);text-transform:uppercase;margin-top:2px;}
+
+  /* ===== 任务页 ===== */
+  .add-cta{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--card-bg);backdrop-filter:var(--glass-blur);border:1px dashed rgba(127,255,212,0.4);border-radius:var(--radius-card);padding:16px;margin-bottom:18px;color:var(--accent);font-size:15px;font-weight:600;cursor:pointer;}
+  .task-card{background:var(--card-bg);backdrop-filter:var(--glass-blur);border:1px solid rgba(255,255,255,0.10);border-radius:var(--radius-card);padding:16px 18px;margin-bottom:12px;}
+  .task-card .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .task-card .tname{font-size:17px;font-weight:600;}
+  .task-card .pomo{font-size:13px;color:var(--text-secondary);}
+  .task-card .pomo b{color:var(--accent);font-size:15px;}
+
+  /* ===== 统计页 ===== */
+  .score-hero{text-align:center;margin:6px 0 22px;}
+  .score-hero .big{font-size:80px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;background:var(--accent-gradient);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px rgba(127,255,212,0.4));}
+  .score-hero .cap{font-size:12px;letter-spacing:2px;color:var(--text-tertiary);text-transform:uppercase;}
+  .seg{display:flex;background:var(--card-bg);border:1px solid rgba(255,255,255,0.12);border-radius:var(--radius-pill);padding:4px;margin:0 auto 22px;width:fit-content;}
+  .seg button{border:none;background:transparent;color:var(--text-secondary);padding:8px 22px;border-radius:var(--radius-pill);font-size:14px;font-weight:600;cursor:pointer;}
+  .seg button.active{background:rgba(127,255,212,0.15);color:var(--accent);}
+  .chart{display:flex;align-items:flex-end;gap:10px;height:150px;padding:0 6px;margin-bottom:8px;}
+  .chart .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;}
+  .chart .col .b{width:100%;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--accent),rgba(127,255,212,0.15));box-shadow:var(--glow-soft);}
+  .chart .col .d{font-size:10px;color:var(--text-tertiary);}
+  .goal{background:var(--card-bg);backdrop-filter:var(--glass-blur);border:1px solid rgba(255,255,255,0.10);border-radius:var(--radius-card);padding:16px 18px;margin:18px 0;}
+  .goal .row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:10px;}
+  .goal .row b{color:var(--accent);}
+  .seg-bar{display:flex;gap:4px;}
+  .seg-bar i{flex:1;height:10px;border-radius:3px;background:rgba(255,255,255,0.10);}
+  .seg-bar i.on{background:var(--accent-gradient);box-shadow:var(--glow-soft);}
+  .gems{display:flex;gap:12px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none;}
+  .gems::-webkit-scrollbar{display:none;}
+  .gem{flex:0 0 110px;background:var(--card-bg);backdrop-filter:var(--glass-blur);border:1px solid rgba(255,255,255,0.10);border-radius:var(--radius-card);padding:16px;text-align:center;}
+  .gem .orb{width:42px;height:42px;border-radius:50%;margin:0 auto 10px;background:radial-gradient(circle at 35% 30%,#fff,var(--accent) 60%,#1c5f4d);box-shadow:0 0 22px rgba(127,255,212,0.5);}
+  .gem.energy .orb{background:radial-gradient(circle at 35% 30%,#fff,var(--energy) 60%,#7a4a14);box-shadow:0 0 22px rgba(255,159,69,0.5);}
+  .gem .gname{font-size:13px;font-weight:600;}
+  .gem .gsub{font-size:10px;color:var(--text-tertiary);margin-top:3px;}
+
+  /* ===== 设置页 ===== */
+  .set-card{background:var(--card-bg);backdrop-filter:var(--glass-blur);border:1px solid rgba(255,255,255,0.10);border-radius:var(--radius-card);padding:6px 18px;margin-bottom:16px;}
+  .set-row{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .set-row:last-child{border-bottom:none;}
+  .set-row .lbl{font-size:15px;}
+  .set-row .lbl small{display:block;font-size:12px;color:var(--text-tertiary);margin-top:2px;}
+  .stepper{display:flex;align-items:center;gap:12px;}
+  .stepper button{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);background:transparent;color:#fff;font-size:16px;cursor:pointer;}
+  .stepper .val{font-size:16px;font-weight:600;min-width:28px;text-align:center;color:var(--accent);}
+  .switch{width:50px;height:30px;border-radius:var(--radius-pill);background:rgba(255,255,255,0.15);position:relative;cursor:pointer;transition:.25s;}
+  .switch.on{background:var(--accent);box-shadow:var(--glow-soft);}
+  .switch i{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.25s;}
+  .switch.on i{left:23px;}
+  .save{width:100%;padding:15px;border-radius:var(--radius-pill);background:var(--accent-gradient);color:#04201a;font-weight:700;font-size:15px;border:none;margin-top:8px;box-shadow:var(--glow-accent);}
+
+  /* 底部悬浮 Tab Bar */
+  .tabbar{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:330px;height:64px;background:rgba(18,18,18,0.7);backdrop-filter:var(--glass-blur);border:1px solid rgba(255,255,255,0.12);border-radius:var(--radius-pill);display:flex;align-items:center;justify-content:space-around;z-index:40;}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text-secondary);cursor:pointer;font-size:10px;}
+  .tab .ti{font-size:20px;}
+  .tab.active{color:var(--text-primary);}
+  .tab.active .ti{filter:drop-shadow(0 0 8px rgba(127,255,212,0.7));}
+
+  .page{display:none;}
+  .page.active{display:block;}
+
+  /* ===== 底部弹窗 Bottom Sheet ===== */
+  .mask{position:absolute;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:.25s;z-index:60;}
+  .mask.show{opacity:1;pointer-events:auto;}
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:#0c1310;border-top-left-radius:28px;border-top-right-radius:28px;border:1px solid rgba(255,255,255,0.10);padding:22px 22px 34px;transform:translateY(100%);transition:.3s cubic-bezier(.2,.8,.2,1);z-index:70;}
+  .mask.show .sheet{transform:translateY(0);}
+  .sheet .grab{width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,0.25);margin:0 auto 18px;}
+  .sheet h3{font-size:20px;font-weight:700;margin-bottom:4px;}
+  .sheet .hint{font-size:13px;color:var(--text-tertiary);margin-bottom:18px;}
+  .field-label{font-size:12px;letter-spacing:1px;color:var(--text-tertiary);text-transform:uppercase;margin-bottom:8px;}
+  .sheet input.name{width:100%;background:var(--card-bg);border:1px solid rgba(255,255,255,0.14);border-radius:14px;padding:14px 16px;color:#fff;font-size:16px;outline:none;margin-bottom:22px;}
+  .sheet input.name::placeholder{color:var(--text-tertiary);}
+  .pomo-pick{display:flex;align-items:center;justify-content:space-between;background:var(--card-bg);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:12px 16px;margin-bottom:24px;}
+  .pomo-pick .pl{font-size:15px;}
+  .pomo-pick .pl small{display:block;font-size:12px;color:var(--text-tertiary);margin-top:2px;}
+  .pomo-pick .stepper button{width:38px;height:38px;font-size:20px;}
+  .pomo-pick .stepper .val{font-size:20px;min-width:34px;}
+  .sheet .actions{display:flex;gap:12px;}
+  .sheet .actions .btn{flex:1;}
+  /* 选任务列表 */
+  .pick-list{max-height:360px;overflow-y:auto;margin-bottom:10px;}
+  .pick-item{display:flex;align-items:center;justify-content:space-between;background:var(--card-bg);border:1px solid rgba(255,255,255,0.10);border-radius:16px;padding:16px;margin-bottom:10px;cursor:pointer;}
+  .pick-item.active{border-color:var(--accent);box-shadow:var(--glow-soft);}
+  .pick-item .pi-name{font-size:16px;font-weight:600;}
+  .pick-item .pi-sub{font-size:12px;color:var(--text-secondary);margin-top:3px;}
+  .pick-item .check{width:24px;height:24px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:13px;}
+  .pick-item.active .check{background:var(--accent);border-color:var(--accent);color:#04201a;}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="island"></div>
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="icons"><span>📶</span><span>🔋</span></span>
+  </div>
+
+  <div class="screen">
+    <!-- ===== 计时主页 ===== -->
+    <div class="page active" id="pg-home">
+      <div class="topbar">
+        <h1>专注</h1>
+        <div class="icon-btn">⚙️</div>
+      </div>
+      <div class="mode-row">
+        <div class="mode-pill active">工作</div>
+        <div class="mode-pill">短休</div>
+        <div class="mode-pill">长休</div>
+      </div>
+      <div class="hero">
+        <svg width="280" height="280" viewBox="0 0 280 280">
+          <defs><linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7FFFD4"/><stop offset="100%" stop-color="#FFFFFF"/>
+          </linearGradient></defs>
+          <circle class="ring-bg" cx="140" cy="140" r="130"/>
+          <circle class="ring-fg" cx="140" cy="140" r="130" stroke-dasharray="816.8" stroke-dashoffset="300"/>
+        </svg>
+        <div class="mode-label">FOCUS</div>
+        <div class="time">25:00</div>
+        <div class="sub">第 3 / 5 个番茄</div>
+      </div>
+      <div class="controls">
+        <button class="btn btn-primary">开始专注</button>
+        <button class="btn btn-ghost">重置</button>
+      </div>
+      <!-- 当前任务（点击选择/切换） -->
+      <div class="task-now" onclick="openSheet('sheet-pick')">
+        <div class="lbl"><span>Current Task</span><span class="change">点击切换 ›</span></div>
+        <div class="name" id="home-task-name">写产品周报</div>
+        <div class="prog"><span id="home-task-prog">已投入 3 / 预估 5 🍅</span><span style="color:var(--accent)" id="home-task-pct">60%</span></div>
+        <div class="bar"><i id="home-task-bar" style="width:60%"></i></div>
+      </div>
+      <div class="pills">
+        <div class="pill"><div class="ico">🍅</div><div class="num">6</div><div class="cap">今日番茄</div></div>
+        <div class="pill"><div class="ico">⏱️</div><div class="num">150m</div><div class="cap">专注时长</div></div>
+        <div class="pill energy"><div class="ico">🔥</div><div class="num">3</div><div class="cap">连续天数</div></div>
+      </div>
+    </div>
+
+    <!-- ===== 任务页 ===== -->
+    <div class="page" id="pg-task">
+      <div class="topbar"><h1>任务</h1><div class="icon-btn" onclick="openSheet('sheet-add')">＋</div></div>
+      <div class="add-cta" onclick="openSheet('sheet-add')">＋ 添加新任务（含预估番茄数）</div>
+      <div id="task-list">
+        <div class="task-card"><div class="head"><div class="tname">写产品周报</div><div class="pomo"><b>3</b> / 5 🍅</div></div><div class="bar"><i style="width:60%"></i></div></div>
+        <div class="task-card"><div class="head"><div class="tname">复习算法题</div><div class="pomo"><b>1</b> / 4 🍅</div></div><div class="bar"><i style="width:25%"></i></div></div>
+        <div class="task-card"><div class="head"><div class="tname">整理设计资料</div><div class="pomo"><b>0</b> / 2 🍅</div></div><div class="bar"><i style="width:0%"></i></div></div>
+        <div class="task-card"><div class="head"><div class="tname">回邮件</div><div class="pomo"><b>2</b> / 2 🍅</div></div><div class="bar"><i style="width:100%"></i></div></div>
+      </div>
+    </div>
+
+    <!-- ===== 统计页 ===== -->
+    <div class="page" id="pg-stat">
+      <div class="topbar"><h1>统计</h1><div class="icon-btn">📤</div></div>
+      <div class="score-hero"><div class="big">81</div><div class="cap">专注评分 · TODAY</div></div>
+      <div class="seg"><button class="active">日</button><button>周</button><button>月</button></div>
+      <div class="chart">
+        <div class="col"><div class="b" style="height:45%"></div><div class="d">一</div></div>
+        <div class="col"><div class="b" style="height:70%"></div><div class="d">二</div></div>
+        <div class="col"><div class="b" style="height:55%"></div><div class="d">三</div></div>
+        <div class="col"><div class="b" style="height:90%"></div><div class="d">四</div></div>
+        <div class="col"><div class="b" style="height:35%"></div><div class="d">五</div></div>
+        <div class="col"><div class="b" style="height:60%"></div><div class="d">六</div></div>
+        <div class="col"><div class="b" style="height:80%"></div><div class="d">日</div></div>
+      </div>
+      <div class="goal"><div class="row"><span>今日番茄目标</span><b>6 / 8 🍅</b></div>
+        <div class="seg-bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+      </div>
+      <h1 style="font-size:18px;margin:6px 0 14px">成就宝石</h1>
+      <div class="gems">
+        <div class="gem"><div class="orb"></div><div class="gname">首胜</div><div class="gsub">连续 7 天</div></div>
+        <div class="gem energy"><div class="orb"></div><div class="gname">十连击</div><div class="gsub">单日 10 🍅</div></div>
+        <div class="gem"><div class="orb" style="opacity:.3"></div><div class="gname">百番茄</div><div class="gsub">未解锁</div></div>
+      </div>
+    </div>
+
+    <!-- ===== 设置页 ===== -->
+    <div class="page" id="pg-set">
+      <div class="topbar"><h1>设置</h1><div class="icon-btn">↩︎</div></div>
+      <div class="set-card">
+        <div class="set-row"><div class="lbl">工作时长<small>单个番茄分钟数</small></div><div class="stepper"><button>−</button><span class="val">25</span><button>＋</button></div></div>
+        <div class="set-row"><div class="lbl">短休息<small>每轮工作后</small></div><div class="stepper"><button>−</button><span class="val">5</span><button>＋</button></div></div>
+        <div class="set-row"><div class="lbl">长休息<small>长休分钟数</small></div><div class="stepper"><button>−</button><span class="val">15</span><button>＋</button></div></div>
+        <div class="set-row"><div class="lbl">长休间隔<small>每几个番茄后长休</small></div><div class="stepper"><button>−</button><span class="val">4</span><button>＋</button></div></div>
+      </div>
+      <div class="set-card">
+        <div class="set-row"><div class="lbl">自动开始下一轮</div><div class="switch on"><i></i></div></div>
+        <div class="set-row"><div class="lbl">休息结束提醒</div><div class="switch on"><i></i></div></div>
+        <div class="set-row"><div class="lbl">护眼提醒 20-20-20</div><div class="switch"><i></i></div></div>
+        <div class="set-row"><div class="lbl">完成庆祝动效</div><div class="switch on"><i></i></div></div>
+      </div>
+      <button class="save">保存设置</button>
+    </div>
+  </div>
+
+  <!-- ===== 底部弹窗：添加任务 ===== -->
+  <div class="mask" id="mask-add" onclick="if(event.target===this)closeSheet('sheet-add')">
+    <div class="sheet" id="sheet-add">
+      <div class="grab"></div>
+      <h3>新建任务</h3>
+      <div class="hint">给任务起个名字，并预估需要的番茄数</div>
+      <div class="field-label">任务名称</div>
+      <input class="name" id="new-task-name" type="text" placeholder="例如：写产品周报">
+      <div class="field-label">预估番茄数</div>
+      <div class="pomo-pick">
+        <div class="pl">🍅 预计投入<small>1 个番茄 = 25 分钟专注</small></div>
+        <div class="stepper"><button onclick="stepPomo(-1)">−</button><span class="val" id="new-task-est">3</span><button onclick="stepPomo(1)">＋</button></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="closeSheet('sheet-add')">取消</button>
+        <button class="btn btn-primary" onclick="confirmAdd()">创建任务</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 底部弹窗：选择/切换任务 ===== -->
+  <div class="mask" id="mask-pick" onclick="if(event.target===this)closeSheet('sheet-pick')">
+    <div class="sheet" id="sheet-pick">
+      <div class="grab"></div>
+      <h3>选择专注任务</h3>
+      <div class="hint">选择后将在主页计时器绑定该任务</div>
+      <div class="pick-list" id="pick-list">
+        <div class="pick-item active" data-name="写产品周报" data-done="3" data-est="5" onclick="selectTask(this)">
+          <div><div class="pi-name">写产品周报</div><div class="pi-sub">已投入 3 / 预估 5 🍅</div></div><div class="check">✓</div>
+        </div>
+        <div class="pick-item" data-name="复习算法题" data-done="1" data-est="4" onclick="selectTask(this)">
+          <div><div class="pi-name">复习算法题</div><div class="pi-sub">已投入 1 / 预估 4 🍅</div></div><div class="check"></div>
+        </div>
+        <div class="pick-item" data-name="整理设计资料" data-done="0" data-est="2" onclick="selectTask(this)">
+          <div><div class="pi-name">整理设计资料</div><div class="pi-sub">已投入 0 / 预估 2 🍅</div></div><div class="check"></div>
+        </div>
+        <div class="pick-item" data-name="回邮件" data-done="2" data-est="2" onclick="selectTask(this)">
+          <div><div class="pi-name">回邮件</div><div class="pi-sub">已投入 2 / 预估 2 🍅</div></div><div class="check"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部悬浮 Tab Bar -->
+  <div class="tabbar">
+    <div class="tab active" onclick="go('pg-home',this)"><span class="ti">⏳</span>主页</div>
+    <div class="tab" onclick="go('pg-task',this)"><span class="ti">✓</span>任务</div>
+    <div class="tab" onclick="go('pg-stat',this)"><span class="ti">📊</span>统计</div>
+  </div>
+</div>
+
+<script>
+  function go(id,el){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+  }
+  document.querySelectorAll('.switch').forEach(s=>s.addEventListener('click',()=>s.classList.toggle('on')));
+  document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',function(){
+    this.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+  }));
+
+  /* ===== Bottom Sheet ===== */
+  function openSheet(id){ document.getElementById('mask-'+id.split('-')[1]).classList.add('show'); }
+  function closeSheet(id){ document.getElementById('mask-'+id.split('-')[1]).classList.remove('show'); }
+
+  /* 添加任务：番茄数 stepper */
+  let est=3;
+  function stepPomo(d){ est=Math.max(1,Math.min(20,est+d)); document.getElementById('new-task-est').textContent=est; }
+  function confirmAdd(){
+    const name=document.getElementById('new-task-name').value.trim()||'未命名任务';
+    const card=document.createElement('div');
+    card.className='task-card';
+    card.innerHTML=`<div class="head"><div class="tname">${name}</div><div class="pomo"><b>0</b> / ${est} 🍅</div></div><div class="bar"><i style="width:0%"></i></div>`;
+    document.getElementById('task-list').prepend(card);
+    // 同步到选择列表
+    const item=document.createElement('div');
+    item.className='pick-item';item.setAttribute('data-name',name);item.setAttribute('data-done','0');item.setAttribute('data-est',est);
+    item.setAttribute('onclick','selectTask(this)');
+    item.innerHTML=`<div><div class="pi-name">${name}</div><div class="pi-sub">已投入 0 / 预估 ${est} 🍅</div></div><div class="check"></div>`;
+    document.getElementById('pick-list').prepend(item);
+    est=3;document.getElementById('new-task-est').textContent=3;document.getElementById('new-task-name').value='';
+    closeSheet('sheet-add');
+  }
+
+  /* 选择任务：更新主页 */
+  function selectTask(el){
+    document.querySelectorAll('#pick-list .pick-item').forEach(i=>{i.classList.remove('active');i.querySelector('.check').textContent='';});
+    el.classList.add('active');el.querySelector('.check').textContent='✓';
+    const name=el.dataset.name,done=+el.dataset.done,total=+el.dataset.est,pct=Math.round(done/total*100);
+    document.getElementById('home-task-name').textContent=name;
+    document.getElementById('home-task-prog').textContent=`已投入 ${done} / 预估 ${total} 🍅`;
+    document.getElementById('home-task-pct').textContent=pct+'%';
+    document.getElementById('home-task-bar').style.width=pct+'%';
+    closeSheet('sheet-pick');
+  }
+</script>
+</body>
+</html>
