@@ -10,3 +10,4 @@ h5/dist-ssr
 h5/node_modules
 **/.vite
 *.local
+/.idea/
